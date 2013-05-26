@@ -15,11 +15,11 @@ sanitize() {
 }
 
 splittags() {
-  awk -v tag="$1" -f splittags.awk
+  awk -v tag="$1" -f "$SRCDIR/splittags.awk"
 }
 
 scrape() {
-  TZ=UTC0 awk -v g="$1" -v timestamp="${2:-0}" -v sep="$SEP" -f scrape.awk
+  TZ=UTC0 awk -v g="$1" -v timestamp="${2:-0}" -v sep="$SEP" -f "$SRCDIR/scrape.awk"
 }
 
 declare -A groupinsane # unsanitized group names

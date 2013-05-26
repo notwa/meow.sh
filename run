@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
+SRCDIR="$(readlink -f "$(dirname "$0")" )"
+
 prettify() {
   while IFS=$SEP read -r title torrent time; do
       echo "$title"$'\n'"dl:"$'\t'"$torrent"$'\n'"at:"$'\t'"$(date -d @"$time")"
   done
 }
 
-. meow.sh
+. "$SRCDIR/meow.sh"
 . config.sh
 [ -e times.sh ] && { . times.sh; mv times.sh times.sh.old; }
 runall | prettify

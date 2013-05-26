@@ -5,7 +5,7 @@ prettify() {
   done
 }
 
-. nyaa.sh
+. meow.sh
 . config.sh
 [ -e times.sh ] && { . times.sh; mv times.sh times.sh.old; }
 runall | prettify

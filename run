@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+prettify() {
+  while IFS=$SEP read -r title torrent time; do
+      echo "$title"$'\n'"dl:"$'\t'"$torrent"$'\n'"at:"$'\t'"$(date -d @"$time")"
+  done
+}
+
+. nyaa.sh
+. config.sh
+[ -e times.sh ] && { . times.sh; mv times.sh times.sh.old; }
+runall | prettify

@@ -51,8 +51,8 @@ groupreleases() { # groupname [timestamp]
 }
 
 groupfilter() { # groupname regex [timestamp]
-  groupreleases "$1" "${3:-}" | while IFS=$SEP read -r title torrent; do
-    grep -P "$2" <<< "$title" 1>/dev/null && echo "$title$SEP$torrent"
+  groupreleases "$1" "${3:-}" | while IFS=$SEP read -r title etc; do
+    grep -P "$2" <<< "$title" 1>/dev/null && echo -E "$title$SEP$etc"
   done
   [ ${PIPESTATUS[0]} = 0 ] || exit 1
 }
@@ -60,7 +60,7 @@ groupfilter() { # groupname regex [timestamp]
 cleanup() {
   for gs in "${!grouptimes[@]}"; do
     local v="${grouptimes[$gs]}"
-    echo "touchgroup $gs $v" >> times.sh
+    echo -E "touchgroup $gs $v" >> times.sh
     [ -e "$gs.xml" ] && rm "$gs.xml"
   done
   exit ${1:-1}

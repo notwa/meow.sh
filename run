@@ -3,7 +3,7 @@ SRCDIR="$(readlink -f "$(dirname "$0")" )"
 
 prettify() {
   while IFS=$SEP read -r title torrent time; do
-      echo "$title"$'\n'"dl:"$'\t'"$torrent"$'\n'"at:"$'\t'"$(date -d @"$time")"
+      echo -E "$title"$'\n'"dl:"$'\t'"$torrent"$'\n'"at:"$'\t'"$(date -d @"$time")"
   done
 }
 

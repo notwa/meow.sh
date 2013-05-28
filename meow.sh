@@ -54,6 +54,7 @@ groupfilter() { # groupname regex [timestamp]
   groupreleases "$1" "${3:-}" | while IFS=$SEP read -r title torrent; do
     grep -P "$2" <<< "$title" 1>/dev/null && echo "$title$SEP$torrent"
   done
+  [ ${PIPESTATUS[0]} = 0 ] || exit 1
 }
 
 cleanup() {
@@ -62,13 +63,14 @@ cleanup() {
     echo "touchgroup $gs $v" >> times.sh
     [ -e "$gs.xml" ] && rm "$gs.xml"
   done
-  exit 0
+  exit ${1:-1}
 }
 
 # TODO: optionally buffer lists so interrupting and restarting wont give the same output
 
 runall() {
   trap cleanup INT
+  ret=0
 
   local insane regex timestamp now
   for gs in "${!groupshows[@]}"; do
@@ -76,9 +78,9 @@ runall() {
     regex="${groupshows[$gs]:1}"
     timestamp="${grouptimes[$gs]}"
     now="$(date -u '+%s')"
-    groupfilter "$insane" "$regex" "$timestamp"
-    touchgroup "$gs" "$now"
+    ( groupfilter "$insane" "$regex" "$timestamp" )
+    [ $? = 0 ] && touchgroup "$gs" "$now" || ret=1
   done
 
-  cleanup
+  cleanup $ret
 }

@@ -66,21 +66,24 @@ cleanup() {
   exit ${1:-1}
 }
 
-# TODO: optionally buffer lists so interrupting and restarting wont give the same output
+rungroup() {
+  local insane regex timestamp res recent
+  insane="${groupinsane[$1]}"
+  regex="${groupshows[$1]:1}"
+  timestamp="${grouptimes[$1]}"
+  res="$(groupfilter "$insane" "$regex" "$timestamp")"
+  [ $? = 0 ] || return $?
+  IFS=$SEP read -r _ _ recent <<< "$res"
+  [ -n "$recent" ] && {
+    grouptimes[$1]="$recent"
+    echo -E "$res"
+  }
+  return 0
+}
 
 runall() {
   trap cleanup INT
   ret=0
-
-  local insane regex timestamp now
-  for gs in "${!groupshows[@]}"; do
-    insane="${groupinsane[$gs]}"
-    regex="${groupshows[$gs]:1}"
-    timestamp="${grouptimes[$gs]}"
-    now="$(date -u '+%s')"
-    ( groupfilter "$insane" "$regex" "$timestamp" )
-    [ $? = 0 ] && touchgroup "$gs" "$now" || ret=1
-  done
-
+  for gs in "${!groupshows[@]}"; do rungroup "$gs" || ret=1; done
   cleanup $ret
 }

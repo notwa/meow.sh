@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 SEP=$'\1'
+curl=(curl -sS -m 32 --connect-timeout 8 --retry 3 --retry-delay 1)
 
 die() {
   echo -E "$@" 1>&2
@@ -46,7 +47,7 @@ groupreleases() { # groupname [timestamp]
   nullcheck "$1"
   # TODO: escapeurl $1
   local URL="http://www.nyaa.eu/?page=search&term=%5B$1%5D&page=rss"
-  curl -LsS "$URL" > "$1.xml" || die "Failed to retrieve releases for $1"
+  ${curl[@]} "$URL" > "$1.xml" || die "Failed to retrieve releases for $1"
   tr -d '\r\n'"$SEP" < "$1.xml" | splittags item | scrape "$1" "${2:-}"
 }
 

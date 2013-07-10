@@ -1,13 +1,15 @@
 # meow.sh
 
-Prints out the title, torrent link, and timestamp
-for every new release matching your regular expressions
-and reminds you that your taste in anime is shit.
+Scrapes the title, torrent link, and timestamp
+for every new release matching user-defined regular expressions.
+Optionally sends them to a local instance of transmission-remote.
 
 ## Usage
 
-Just take a peek at `run` and `config.sh` for now.
-If you can't figure it out, you're too sane to use this.
+Define regexes in `config.sh` and
+execute `../path/to/meow.sh/run`.
+You may wish to redirect or silence
+stdout when running as a cron job.
 
 ## License
 

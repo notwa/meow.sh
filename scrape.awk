@@ -31,7 +31,7 @@ function run(str) {
   pub=unescape(opentag($0, "pubDate"))
 # "date -d \""pub "\" +%s" | getline pubunix
   pubunix=hotdate(pub)
-  if (pubunix <= timestamp) return
+  if (pubunix <= ts) return
   torrent=unescape(opentag(str, "link"))
   print title sep torrent sep pubunix
 }

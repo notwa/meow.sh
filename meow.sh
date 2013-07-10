@@ -11,6 +11,11 @@ die() {
     exit 1
 }
 
+retrieve() {
+    curl -LsSG -d page=search --data-urlencode "term=[$1]" -d page=rss \
+      "http://www.nyaa.eu/"
+}
+
 nullcheck() { # {group name}
     [[ -n "$1" ]] || die "Null group name";
 }
@@ -45,10 +50,8 @@ touchgroup() { # {group name} {timestamp}
 
 groupreleases() { # groupname [timestamp]
     nullcheck "$1"
-    # TODO: escapeurl $1
-    local URL="http://www.nyaa.eu/?page=search&term=%5B$1%5D&page=rss"
-    curl -LsS "$URL" > "$1.xml" || die "Failed to retrieve releases for $1"
-    tr -d '\r\n'"$SEP" < "$1.xml" | splittags item | scrape "$1" "${2:-}"
+    retrieve "$1" | tr -d '\r\n'"$SEP" | splittags item | scrape "$1" "${2:-}"
+    [ ${PIPESTATUS[0]} = 0 ] || die "Failed to retrieve releases for $1"
 }
 
 groupfilter() { # groupname regex [timestamp]

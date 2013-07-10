@@ -13,7 +13,7 @@ die() {
 }
 
 retrieve() {
-    ${curl[@]} -d page=search --data-urlencode "term=[$1]" -d page=rss \
+    ${curl[@]} -G -d page=search --data-urlencode "term=[$1]" -d page=rss \
       "http://www.nyaa.eu/"
 }
 

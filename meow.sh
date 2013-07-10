@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 SEP=$'\1'
+curl=(curl -sS -m 32 --connect-timeout 8 --retry 3 --retry-delay 1)
 
 # all timestamps are given in seconds since the epoch
 declare -A groupinsane # unsanitized group names
@@ -12,7 +13,7 @@ die() {
 }
 
 retrieve() {
-    curl -LsSG -d page=search --data-urlencode "term=[$1]" -d page=rss \
+    ${curl[@]} -d page=search --data-urlencode "term=[$1]" -d page=rss \
       "http://www.nyaa.eu/"
 }
 

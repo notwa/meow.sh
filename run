@@ -31,7 +31,7 @@ runactions() {
       "$a" "$title" "$torrent" "$time"
     done
   done
-  [ ${#torrents} = 0 ] || transmission-remote -a "${torrents[@]}"
+  for t in "${torrents[@]}"; do transmission-remote -a "$t"; done
 }
 
 . "$SRCDIR/meow.sh"

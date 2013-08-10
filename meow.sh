@@ -13,8 +13,8 @@ die() {
 }
 
 retrieve() {
-    ${curl[@]} -G -d page=search --data-urlencode "term=[$1]" -d page=rss \
-      "http://www.nyaa.eu/"
+    ${curl[@]} -G --data-urlencode "term=[$1]" -d page=rss \
+      "http://www.nyaa.se/"
 }
 
 nullcheck() { # {group name}

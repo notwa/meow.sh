@@ -5,33 +5,33 @@ SRCDIR="$(readlink -f "$(dirname "$0")" )"
 
 declare -a actions
 while getopts 'aph' opt; do
-  case $opt in
-  a) actions+=(addtorrent);;
-  p) actions+=(prettify);;
-  ?) echo -E "usage: $0 [-ap]" 1>&2;;
-  esac
+    case $opt in
+     a) actions+=(addtorrent);;
+     p) actions+=(prettify);;
+     ?) echo -E "usage: $0 [-ap]" 1>&2;;
+    esac
 done
 
 prettify() {
-  echo -E "$1"$'\n'"dl:"$'\t'"$2"$'\n'"at:"$'\t'"$(date -d @"$3")"
+    echo -E "$1"$'\n'"dl:"$'\t'"$2"$'\n'"at:"$'\t'"$(date -d @"$3")"
 }
 
 declare -a torrents
 addtorrent() {
-  torrents+=("$2")
+    torrents+=("$2")
 }
 
 runactions() {
-  [ ${#actions} = 0 ] && {
-    cat
-    return
-  }
-  while IFS=$SEP read -r title torrent time; do
-    for a in "${actions[@]}"; do
-      "$a" "$title" "$torrent" "$time"
+    [ ${#actions} = 0 ] && {
+        cat
+        return
+    }
+    while IFS=$SEP read -r title torrent time; do
+        for a in "${actions[@]}"; do
+            "$a" "$title" "$torrent" "$time"
+        done
     done
-  done
-  for t in "${torrents[@]}"; do transmission-remote -a "$t"; done
+    for t in "${torrents[@]}"; do transmission-remote -a "$t"; done
 }
 
 . "$SRCDIR/meow.sh"

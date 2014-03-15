@@ -2,10 +2,12 @@
 SEP=$'\t'
 curl=(curl -sS -m 32 --connect-timeout 8 --retry 3 --retry-delay 1)
 
+URL_SEARCH='http://www.nyaa.se/'
+URL_DOWNLOAD='http://www.nyaa.se/?page=download&tid='
+
 # all timestamps are given in seconds since the epoch
 declare -A searchquery
 declare -A searchregex
-declare -A searchtime # last seen release
 
 die() {
     echo -E "$@" >&2
@@ -13,8 +15,7 @@ die() {
 }
 
 retrieve() {
-    ${curl[@]} -G --data-urlencode "term=[$1]" -d page=rss \
-      "http://www.nyaa.se/"
+    ${curl[@]} -G --data-urlencode "term=[$1]" -d page=rss "$URL_SEARCH"
 }
 
 nullcheck() { # {query}
@@ -43,48 +44,46 @@ watch() { # {search query} [regex...]
     done
 }
 
-touchquery() { # {search query} {timestamp}
-    nullcheck "$1"
-    local gs="$(sanitize<<<"$1")"
-    searchtime[$gs]="$2"
-}
-
 search() {
     nullcheck "$1"
     retrieve "$1" | tr -d '\r\n'"$SEP" | splittags item | scrape
     [ ${PIPESTATUS[0]} = 0 ] || die "Failed to search for $1"
 }
 
-searchfilter() { # key regex [timestamp]
-    while IFS=$SEP read -r title etc; do
-        grep -P "$2" <<< "$title" >/dev/null && echo -E "$title$SEP$etc"
-    done < db.txt
-    [ ${PIPESTATUS[0]} = 0 ] || exit 1
+searchfilter() { # database regex [timestamp]
+    while read -r; do
+        IFS=$SEP read -r time tid title <<< "$REPLY"
+        [ "$time" -gt "${3:-0}" ] \
+        && grep -qP "$2" <<< "$title" \
+        && echo -E "$REPLY"
+    done < "$1"
 }
 
-cleanup() {
-    local gs= v=
-    for gs in "${!searchtime[@]}"; do
-        v="${searchtime[$gs]}"
-        echo -E "touchquery $gs $v" >> times.sh
-        [ -e "$gs.xml" ] && rm "$gs.xml"
+runfilter() { # {action} [database]
+    declare -A already
+    local action="${1:-echo}"
+    local mark="$action.txt"
+    local db="${2:-db.txt}"
+
+    touch "$mark"
+    while IFS=$SEP read -r tid time; do
+        already["$tid"]="$time"
+    done < "$mark"
+
+    now="$(date +%s)"
+    for regex in "${searchregex[@]}"; do
+        while IFS=$SEP read -r time tid title; do
+            [ -n "${already[$tid]}" ] \
+            || $action $time $tid "$title" \
+            || break
+            already[$tid]="$now"
+        done < <(searchfilter "$db" "${regex:1}")
     done
-    exit ${1:-1}
-}
 
-runfilter() {
-    local query= regex= timestamp= res= _= recent=
-    query="${searchquery[$1]}"
-    regex="${searchregex[$1]:1}" # exclude first | character
-    timestamp="${searchtime[$1]}"
-    res="$(searchfilter "$query" "$regex" "$timestamp")"
-    [ $? = 0 ] || return $?
-    IFS=$SEP read -r _ _ recent <<< "$res"
-    [ -n "$recent" ] && {
-        searchtime[$1]="$recent"
-        echo -E "$res"
-    }
-    return 0
+    rm "$mark"
+    for tid in "${!already[@]}"; do
+        echo "$tid$SEP${already[$tid]}" >> "$mark"
+    done
 }
 
 runsearch() { # [database]
@@ -94,17 +93,11 @@ runsearch() { # [database]
     for q in "${!searchquery[@]}"; do
         search "${searchquery[$q]}" \
         | while IFS=$SEP read -r title torrent time; do
-            echo -E "$time$SEP$q$SEP$title$SEP$torrent"
+            local tid="${torrent##*=}"
+            echo -E "$time$SEP$tid$SEP$title"
         done
     done | sort -n -- "$db" - | uniq > $tmp
     # TODO: don't accidentally overwrite $db with something blank/incomplete
     #       maybe check if filesize has decreased and die if so
     mv $tmp "$db"
-}
-
-runall() {
-    trap cleanup INT
-    local ret=0 gs=
-    for gs in "${!searchregex[@]}"; do runfilter "$gs" || ret=1; done
-    cleanup $ret
 }

@@ -13,34 +13,27 @@ while getopts 'aph' opt; do
 done
 
 prettify() {
-    echo -E "$1"$'\n'"dl:"$'\t'"$2"$'\n'"at:"$'\t'"$(date -d @"$3")"
+    echo -E "$3"$'\n'"dl:"$'\t'"$URL_DOWNLOAD$2"$'\n'"at:"$'\t'"$(date -d @"$1")"
 }
 
-declare -a torrents
 addtorrent() {
-    torrents+=("$2")
-}
-
-runactions() {
-    [ ${#actions} = 0 ] && {
-        cat
-        return
-    }
-    while IFS=$SEP read -r title torrent time; do
-        for a in "${actions[@]}"; do
-            "$a" "$title" "$torrent" "$time"
-        done
-    done
-    for t in "${torrents[@]}"; do transmission-remote -a "$t"; done
+    transmission-remote -a "$URL_DOWNLOAD$2"
 }
 
 . "$SRCDIR/meow.sh"
 . config.sh
 
-#[ -e times.sh ] && { . times.sh; mv times.sh times.sh.old; }
-#runall | runactions
-#exit ${PIPESTATUS[0]}
-
 runsearch
+
+if [ "${#actions}" -eq 0 ]; then
+    # TODO: abstract
+    for regex in "${searchregex[@]}"; do
+        searchfilter db.txt "${regex:1}"
+    done
+else
+    for a in "${actions[@]}"; do
+        runfilter "$a"
+    done
+fi
 
 exit 0

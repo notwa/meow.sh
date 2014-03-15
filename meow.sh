@@ -64,6 +64,7 @@ runfilter() { # {action} [database]
     local action="${1:-echo}"
     local mark="$action.txt"
     local db="${2:-db.txt}"
+    local ret=0
 
     touch "$mark"
     while IFS=$SEP read -r tid time; do
@@ -78,6 +79,7 @@ runfilter() { # {action} [database]
             echo "[meow.sh] failed to run $action" >&2
             echo "[meow.sh] torrent title: $title" >&2
             echo "[meow.sh] torrent id: $tid" >&2
+            ret=1
             break
         }
         already[$tid]="$now"
@@ -89,6 +91,8 @@ runfilter() { # {action} [database]
     for tid in "${!already[@]}"; do
         echo "$tid$SEP${already[$tid]}" >> "$mark"
     done
+
+    return "$ret"
 }
 
 runsearch() { # [database]

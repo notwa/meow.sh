@@ -4,11 +4,12 @@ SRCDIR="$(readlink -f "$(dirname "$0")" )"
 # TODO: a way to pass opts to transmission-remote
 
 declare -a actions
-while getopts 'aph' opt; do
+while getopts 'ap' opt; do
     case $opt in
      a) actions+=(addtorrent);;
      p) actions+=(prettify);;
-     ?) echo -E "usage: $0 [-ap]" 1>&2;;
+     ?) echo -E "usage: $0 [-ap]" >&2
+        return 1;;
     esac
 done
 

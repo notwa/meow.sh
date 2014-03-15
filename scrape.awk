@@ -22,16 +22,13 @@ BEGIN{
     # http://stackoverflow.com/a/2123002
     m=split("Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec",d,"|")
     for(o=1;o<=m;o++) months[d[o]]=sprintf("%02d",o)
-    glen=length(g)
 }
 
 function run(str) {
     title=unescape(opentag(str, "title"))
-    if (substr(title,1,glen+2) != "["g"]") return
-    pub=unescape(opentag($0, "pubDate"))
+    pub=unescape(opentag(str, "pubDate"))
 #   "date -d \""pub "\" +%s" | getline pubunix
     pubunix=hotdate(pub)
-    if (pubunix <= ts) return
     torrent=unescape(opentag(str, "link"))
     print title sep torrent sep pubunix
 }

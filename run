@@ -36,6 +36,11 @@ runactions() {
 
 . "$SRCDIR/meow.sh"
 . config.sh
-[ -e times.sh ] && { . times.sh; mv times.sh times.sh.old; }
-runall | runactions
-exit ${PIPESTATUS[0]}
+
+#[ -e times.sh ] && { . times.sh; mv times.sh times.sh.old; }
+#runall | runactions
+#exit ${PIPESTATUS[0]}
+
+runsearch
+
+exit 0

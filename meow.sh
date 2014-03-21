@@ -73,16 +73,15 @@ runfilter() { # {action} [database]
 
     now="$(date +%s)"
     while IFS=$SEP read -r time tid title; do
-        [ -n "${already[$tid]}" ] \
-        || $action $time $tid "$title" \
-        || {
+        [ -n "${already[$tid]}" ] || {
+            $action $time $tid "$title" && already[$tid]="$now"
+        } || {
             echo "[meow.sh] failed to run $action" >&2
             echo "[meow.sh] torrent title: $title" >&2
             echo "[meow.sh] torrent id: $tid" >&2
             ret=1
             break
         }
-        already[$tid]="$now"
     done < <(for regex in "${searchregex[@]}"; do
         searchfilter "$db" "${regex:1}"
     done)

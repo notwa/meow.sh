@@ -34,7 +34,17 @@ scrape() {
     TZ=UTC0 awk -v sep="$SEP" -f "$SRCDIR/scrape.awk"
 }
 
-watch() { # {search query} [regex...]
+watch() { # {group name} [regex...]
+    declare -a regexes
+    local query="$1"
+    shift
+    for regex; do
+        regexes+=("^\[$query\].*$regex")
+    done
+    watchany "$query" "${regexes[@]}"
+}
+
+watchany() { # {search query} [regex...]
     nullcheck "$1"
     local gs="$(sanitize<<<"$1")" regex=
     searchquery[$gs]="$1"

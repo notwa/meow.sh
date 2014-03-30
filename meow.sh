@@ -108,6 +108,7 @@ runsearch() { # [database]
     local db="${1:-db.txt}"
     local tmp=`mktemp`
     touch "$db"
+
     for q in "${!searchquery[@]}"; do
         search "${searchquery[$q]}" \
         | while IFS=$SEP read -r title torrent time; do
@@ -115,7 +116,9 @@ runsearch() { # [database]
             echo -E "$time$SEP$tid$SEP$title"
         done
     done | sort -n -- "$db" - | uniq > $tmp
-    # TODO: don't accidentally overwrite $db with something blank/incomplete
-    #       maybe check if filesize has decreased and die if so
+
+    fs_old="$(du -b "$db" | cut -f1)"
+    fs_new="$(du -b $tmp | cut -f1)"
+    [ "$fs_new" -lt "$fs_old" ] || die "new database is smaller than current!"
     mv $tmp "$db"
 }

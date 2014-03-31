@@ -119,6 +119,6 @@ runsearch() { # [database]
 
     fs_old="$(du -b "$db" | cut -f1)"
     fs_new="$(du -b $tmp | cut -f1)"
-    [ "$fs_new" -lt "$fs_old" ] || die "new database is smaller than current!"
+    [ "$fs_new" -ge "$fs_old" ] || die "new database is smaller than current!"
     mv $tmp "$db"
 }

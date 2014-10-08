@@ -2,8 +2,8 @@
 SEP=$'\t'
 curl=(curl -sS -m 32 --connect-timeout 8 --retry 3 --retry-delay 1)
 
-URL_SEARCH='http://www.nyaa.se/'
-URL_DOWNLOAD='http://www.nyaa.se/?page=download&tid='
+URL_SEARCH="${URL_SEARCH:-http://www.nyaa.se/}"
+URL_DOWNLOAD="${URL_DOWNLOAD:-http://www.nyaa.se/?page=download&tid=}"
 
 # all timestamps are given in seconds since the epoch
 declare -A searchquery
@@ -69,6 +69,18 @@ searchfilter() { # database regex [timestamp]
     done < "$1"
 }
 
+searchfilter_fast() { # {database} {regex}
+    declare -A matched
+    while read -r; do
+         matched["$REPLY"]=1
+    done < <(cut -f3- "$1" | grep -nP "$2" | grep -Eo '^[^:]+')
+    n=0
+    while read -r; do
+        ((n++))
+        [ "${matched[$n]:-0}" -eq 1 ] && echo "$REPLY"
+    done < "$1"
+}
+
 runfilter() { # {action} [database]
     declare -A already
     local action="${1:-echo}"
@@ -93,7 +105,7 @@ runfilter() { # {action} [database]
             break
         }
     done < <(for regex in "${searchregex[@]}"; do
-        searchfilter "$db" "${regex:1}"
+        searchfilter_fast "$db" "${regex:1}"
     done)
 
     rm "$mark"

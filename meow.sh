@@ -2,8 +2,8 @@
 SEP=$'\t'
 curl=(curl -sS -m 32 --connect-timeout 8 --retry 3 --retry-delay 1)
 
-URL_SEARCH="${URL_SEARCH:-http://www.nyaa.se/}"
-URL_DOWNLOAD="${URL_DOWNLOAD:-http://www.nyaa.se/?page=download&tid=}"
+URL_SEARCH="${URL_SEARCH:-https://www.nyaa.se/}"
+URL_DOWNLOAD="${URL_DOWNLOAD:-https://www.nyaa.se/?page=download&tid=}"
 
 # all timestamps are given in seconds since the epoch
 declare -A searchquery
